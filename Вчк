@@ -1,1 +1,2637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ВЧК • Абсолютный Контроль</title>
+    <style>
+        /* ===== ВСЕ СТИЛИ (сокращены, но полные в финальном файле) ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            transition: background 0.4s, color 0.4s;
+            overflow-x: hidden;
+            background: #050a14;
+            color: #e8f0ff;
+        }
+        body.light {
+            background: #f0f4fc;
+            color: #1a2a3a;
+        }
+        .holo-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .holo-bg span {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(60, 150, 255, 0.05);
+            box-shadow: 0 0 80px rgba(60, 150, 255, 0.06);
+            animation: floatHolo 30s infinite alternate ease-in-out;
+        }
+        .holo-bg span:nth-child(1) {
+            width: 30px;
+            height: 30px;
+            left: 5%;
+            top: 10%;
+            animation-duration: 32s;
+        }
+        .holo-bg span:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            left: 92%;
+            top: 70%;
+            animation-duration: 38s;
+        }
+        .holo-bg span:nth-child(3) {
+            width: 18px;
+            height: 18px;
+            left: 45%;
+            top: 88%;
+            animation-duration: 26s;
+        }
+        .holo-bg span:nth-child(4) {
+            width: 40px;
+            height: 40px;
+            left: 78%;
+            top: 8%;
+            animation-duration: 42s;
+        }
+        .holo-bg span:nth-child(5) {
+            width: 22px;
+            height: 22px;
+            left: 15%;
+            top: 55%;
+            animation-duration: 28s;
+        }
+        .holo-bg span:nth-child(6) {
+            width: 70px;
+            height: 70px;
+            left: 8%;
+            top: 82%;
+            animation-duration: 45s;
+            opacity: 0.03;
+        }
+        @keyframes floatHolo {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(-200px) scale(2.8) rotate(280deg);
+                opacity: 0.8;
+            }
+        }
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1480px;
+            width: 100%;
+            border-radius: 32px;
+            padding: 16px 18px;
+            transition: background 0.4s, border 0.4s, box-shadow 0.4s;
+            animation: fadeIn 0.6s ease;
+            background: rgba(8, 14, 28, 0.78);
+            backdrop-filter: blur(26px);
+            border: 1px solid rgba(80, 160, 255, 0.08);
+            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9);
+        }
+        body.light .container {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(80, 160, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 20, 60, 0.08);
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.96) translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.08);
+            margin-bottom: 16px;
+        }
+        .top-bar .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            cursor: pointer;
+        }
+        .top-bar .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #c8e0ff, #4a94e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            pointer-events: none;
+        }
+        body.light .top-bar .logo h1 {
+            background: linear-gradient(135deg, #1a4a8a, #4a94e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .top-bar .logo .sub {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #7a9ec8;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+        body.light .top-bar .logo .sub {
+            color: #3a5a7a;
+        }
+        .top-bar .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .top-bar .actions .desktop-only {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .top-bar .actions .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        .top-bar .actions .mobile-dropdown {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            padding: 12px 0;
+            border-top: 1px solid rgba(80, 160, 255, 0.06);
+            margin-top: 8px;
+        }
+        .top-bar .actions .mobile-dropdown.open {
+            display: flex;
+        }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: 0.25s;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        body.dark .btn {
+            background: rgba(30, 60, 120, 0.2);
+            color: #d0e4ff;
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        body.light .btn {
+            background: rgba(30, 80, 200, 0.06);
+            color: #1a3a5a;
+            border: 1px solid rgba(80, 160, 255, 0.1);
+        }
+        .btn:hover {
+            transform: scale(1.03);
+        }
+        body.dark .btn:hover {
+            background: rgba(50, 120, 230, 0.2);
+        }
+        body.light .btn:hover {
+            background: rgba(30, 80, 200, 0.12);
+        }
+        .btn-primary {
+            background: rgba(30, 80, 200, 0.25) !important;
+            border-color: rgba(60, 140, 255, 0.15) !important;
+        }
+        .btn-primary:hover {
+            background: rgba(50, 120, 230, 0.35) !important;
+        }
+        .btn-success {
+            background: rgba(30, 130, 80, 0.2) !important;
+            border-color: rgba(60, 200, 130, 0.1) !important;
+        }
+        .btn-success:hover {
+            background: rgba(40, 180, 110, 0.3) !important;
+        }
+        .btn-danger {
+            background: rgba(160, 40, 60, 0.15) !important;
+            border-color: rgba(255, 80, 100, 0.08) !important;
+        }
+        .btn-danger:hover {
+            background: rgba(200, 50, 70, 0.25) !important;
+        }
+        .btn-warning {
+            background: rgba(200, 160, 30, 0.15) !important;
+            border-color: rgba(255, 200, 50, 0.1) !important;
+            color: #ffd866 !important;
+        }
+        .btn-warning:hover {
+            background: rgba(200, 160, 30, 0.25) !important;
+        }
+        .admin-only {
+            display: none !important;
+        }
+        .admin-only.visible {
+            display: inline-flex !important;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-item {
+            padding: 10px 12px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: 700;
+            transition: background 0.3s;
+        }
+        body.dark .stat-item {
+            background: rgba(0, 8, 24, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.04);
+        }
+        body.light .stat-item {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        .stat-item .number {
+            font-size: 1.4rem;
+            color: #4a8cdb;
+        }
+        body.light .stat-item .number {
+            color: #1a5a9a;
+        }
+        .stat-item .label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+        .public-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 768px) {
+            .public-grid {
+                grid-template-columns: 1fr 1.2fr;
+                gap: 32px;
+            }
+        }
+        .info-card {
+            padding: 18px 20px;
+            border-radius: 24px;
+            transition: background 0.3s, border 0.3s;
+        }
+        body.dark .info-card {
+            background: rgba(0, 8, 24, 0.35);
+            border: 1px solid rgba(80, 160, 255, 0.04);
+        }
+        body.light .info-card {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        .info-card .title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            color: #b0d0ff;
+            border-left: 4px solid #4a8cdb;
+            padding-left: 14px;
+            margin-bottom: 16px;
+        }
+        body.light .info-card .title {
+            color: #1a4a7a;
+        }
+        .info-card .text-block {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .contact-line {
+            display: flex;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.04);
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
+        .contact-line .label {
+            font-weight: 700;
+            width: 80px;
+            text-transform: uppercase;
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+        .contact-line .value {
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .mission-block {
+            margin-top: 12px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border-left: 4px solid rgba(60, 140, 255, 0.25);
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-style: italic;
+        }
+        body.dark .mission-block {
+            background: rgba(30, 80, 200, 0.04);
+            color: #b0d0ff;
+        }
+        body.light .mission-block {
+            background: rgba(30, 80, 200, 0.04);
+            color: #1a4a7a;
+        }
+        .status-indicator {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4a8cdb;
+            border-radius: 50%;
+            box-shadow: 0 0 30px #4a8cdb77;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+        }
+        .edit-mode .editable {
+            outline: 2px dashed rgba(80, 180, 255, 0.25);
+            outline-offset: 4px;
+            border-radius: 6px;
+            padding: 2px 6px;
+            cursor: text;
+            transition: 0.2s;
+        }
+        .edit-mode .editable:hover {
+            outline: 2px dashed rgba(80, 180, 255, 0.5);
+        }
+        .edit-mode .editable:focus {
+            outline: 2px solid rgba(80, 180, 255, 0.7);
+            background: rgba(0, 20, 60, 0.2);
+            border-radius: 8px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: rgba(12, 20, 36, 0.95);
+            border: 1px solid rgba(80, 160, 255, 0.12);
+            border-radius: 32px;
+            padding: 24px 20px;
+            max-width: 480px;
+            width: 100%;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        body.light .modal {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(80, 160, 255, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        .modal h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        body.dark .modal h3 {
+            color: #b0d0ff;
+        }
+        body.light .modal h3 {
+            color: #1a4a7a;
+        }
+        .modal p {
+            opacity: 0.7;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+        }
+        .modal input,
+        .modal select {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: 1px solid rgba(80, 160, 255, 0.12);
+            background: rgba(0, 8, 20, 0.3);
+            color: inherit;
+            font-size: 0.95rem;
+            text-align: center;
+            outline: none;
+            backdrop-filter: blur(4px);
+            margin-bottom: 8px;
+        }
+        .modal input:focus,
+        .modal select:focus {
+            border-color: #4a8cdb;
+        }
+        .modal .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal .modal-actions button {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .modal .modal-actions .btn-confirm {
+            background: rgba(30, 80, 200, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.1);
+            color: inherit;
+        }
+        .modal .modal-actions .btn-confirm:hover {
+            background: rgba(50, 120, 230, 0.4);
+        }
+        .modal .modal-actions .btn-cancel {
+            background: rgba(80, 80, 100, 0.1);
+            border: 1px solid rgba(80, 80, 100, 0.05);
+            color: inherit;
+            opacity: 0.6;
+        }
+        .modal .modal-actions .btn-cancel:hover {
+            background: rgba(80, 80, 100, 0.2);
+        }
+        .modal-error {
+            color: #ff7a7a;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            text-align: center;
+        }
+        .blocks-section {
+            margin: 20px 0;
+        }
+        .blocks-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .blocks-section .section-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            border-left: 4px solid #4a8cdb;
+            padding-left: 14px;
+        }
+        body.dark .blocks-section .section-header h2 {
+            color: #b0d0ff;
+        }
+        body.light .blocks-section .section-header h2 {
+            color: #1a4a7a;
+        }
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 600px) {
+            .blocks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        .block-item {
+            padding: 16px 18px;
+            border-radius: 24px;
+            transition: background 0.3s, border 0.3s;
+            position: relative;
+        }
+        body.dark .block-item {
+            background: rgba(0, 8, 24, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        body.light .block-item {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        .block-item:hover {
+            border-color: rgba(80, 160, 255, 0.15);
+        }
+        .block-item .block-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            background: rgba(80, 160, 255, 0.05);
+        }
+        .block-item .block-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        body.dark .block-item .block-title {
+            color: #d0e8ff;
+        }
+        body.light .block-item .block-title {
+            color: #1a3a5a;
+        }
+        .block-item .block-text {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+        .block-item .block-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 4px;
+        }
+        .block-item .block-actions .btn {
+            font-size: 0.6rem;
+            padding: 4px 8px;
+        }
+        .modal-block .modal .field {
+            margin-bottom: 12px;
+        }
+        .modal-block .modal .field label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            opacity: 0.6;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-block .modal .field input,
+        .modal-block .modal .field textarea {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(80, 160, 255, 0.06);
+            background: rgba(0, 8, 20, 0.15);
+            color: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .modal-block .modal .field input:focus,
+        .modal-block .modal .field textarea:focus {
+            border-color: #4a8cdb;
+        }
+        .modal-block .modal .field textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .modal-block .modal .field .photo-preview {
+            max-width: 100%;
+            max-height: 160px;
+            border-radius: 14px;
+            margin-top: 6px;
+            object-fit: cover;
+            background: rgba(80, 160, 255, 0.05);
+        }
+        .db-panel {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 768px) {
+            .db-panel {
+                grid-template-columns: 1fr 1.2fr;
+                gap: 24px;
+            }
+        }
+        .db-card {
+            padding: 16px 18px;
+            border-radius: 24px;
+            transition: background 0.3s, border 0.3s;
+        }
+        body.dark .db-card {
+            background: rgba(0, 8, 24, 0.35);
+            border: 1px solid rgba(80, 160, 255, 0.04);
+        }
+        body.light .db-card {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        .db-card h3 {
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            border-left: 4px solid #4a8cdb;
+            padding-left: 12px;
+            margin-bottom: 12px;
+        }
+        body.dark .db-card h3 {
+            color: #b0d0ff;
+        }
+        body.light .db-card h3 {
+            color: #1a4a7a;
+        }
+        .field {
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .field label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            opacity: 0.6;
+        }
+        .field input,
+        .field textarea,
+        .field select {
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(80, 160, 255, 0.06);
+            background: rgba(0, 8, 20, 0.15);
+            color: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            outline: none;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            border-color: #4a8cdb;
+        }
+        .field textarea {
+            resize: vertical;
+            min-height: 30px;
+        }
+        .field .file-upload {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .field .file-upload input[type="file"] {
+            background: transparent;
+            border: none;
+            padding: 4px 0;
+            font-size: 0.75rem;
+        }
+        .field .file-upload .file-list {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .field .file-upload .file-list .file-tag {
+            background: rgba(80, 160, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .field .file-upload .file-list .file-tag .remove-file {
+            cursor: pointer;
+            opacity: 0.5;
+            font-weight: 700;
+        }
+        .field .file-upload .file-list .file-tag .remove-file:hover {
+            opacity: 1;
+        }
+        .photo-upload {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .photo-upload img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(80, 160, 255, 0.08);
+            transition: 0.3s;
+        }
+        .photo-upload img:hover {
+            border-color: #4a8cdb;
+        }
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn-group .btn {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+        }
+        .db-table-wrap {
+            overflow-x: auto;
+            margin-top: 10px;
+            border-radius: 16px;
+            padding: 4px;
+            transition: background 0.3s;
+        }
+        body.dark .db-table-wrap {
+            background: rgba(0, 6, 16, 0.15);
+            border: 1px solid rgba(80, 160, 255, 0.03);
+        }
+        body.light .db-table-wrap {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        .db-table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.7rem;
+            min-width: 600px;
+        }
+        .db-table-wrap th {
+            text-align: left;
+            padding: 8px 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.04);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .db-table-wrap th:hover {
+            opacity: 0.7;
+        }
+        .db-table-wrap td {
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.02);
+            vertical-align: middle;
+            font-weight: 500;
+        }
+        .db-table-wrap tr:hover td {
+            background: rgba(80, 160, 255, 0.03);
+        }
+        .db-table-wrap img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid rgba(80, 160, 255, 0.04);
+        }
+        .db-table-wrap .search-box {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .db-table-wrap .search-box input,
+        .db-table-wrap .search-box select {
+            padding: 4px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(80, 160, 255, 0.06);
+            background: rgba(0, 8, 20, 0.1);
+            color: inherit;
+            font-size: 0.8rem;
+            outline: none;
+            backdrop-filter: blur(4px);
+            min-width: 120px;
+        }
+        .db-table-wrap .search-box input:focus,
+        .db-table-wrap .search-box select:focus {
+            border-color: #4a8cdb;
+        }
+        .db-table-wrap .search-box .mass-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+        }
+        .db-table-wrap .search-box .mass-actions .btn {
+            font-size: 0.6rem;
+            padding: 4px 10px;
+        }
+        .db-footer-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+        .db-footer-actions .btn {
+            font-size: 0.65rem;
+            padding: 4px 10px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .toast-container {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 300px;
+            width: 100%;
+        }
+        .toast {
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            backdrop-filter: blur(12px);
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        body.dark .toast {
+            background: rgba(0, 8, 24, 0.85);
+            color: #e8f0ff;
+        }
+        body.light .toast {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a2a3a;
+        }
+        .toast.success {
+            border-left: 4px solid #4a8cdb;
+        }
+        .toast.error {
+            border-left: 4px solid #ff6b6b;
+        }
+        .toast.warning {
+            border-left: 4px solid #ffd866;
+        }
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        #dbHiddenPanel {
+            display: none;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(80, 160, 255, 0.06);
+        }
+        #dbHiddenPanel.active {
+            display: block;
+            animation: fadeGlow 0.4s ease;
+        }
+        @keyframes fadeGlow {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+                filter: blur(4px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+        #trashPanel {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 24px;
+            transition: background 0.3s, border 0.3s;
+        }
+        body.dark #trashPanel {
+            background: rgba(0, 8, 24, 0.2);
+            border: 1px solid rgba(255, 80, 80, 0.06);
+        }
+        body.light #trashPanel {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 80, 80, 0.06);
+        }
+        #trashPanel.active {
+            display: block;
+            animation: fadeGlow 0.3s ease;
+        }
+        #trashPanel .trash-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.04);
+            font-size: 0.8rem;
+        }
+        #trashPanel .trash-item .restore-btn {
+            color: #4a8cdb;
+            cursor: pointer;
+            font-weight: 700;
+            background: none;
+            border: none;
+            font-size: 0.7rem;
+        }
+        #trashPanel .trash-item .restore-btn:hover {
+            text-decoration: underline;
+        }
+        .fullscreen-card-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+        .fullscreen-card-overlay.show {
+            display: flex;
+        }
+        .fullscreen-card {
+            max-width: 640px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 32px;
+            padding: 24px 20px;
+            transition: background 0.3s, border 0.3s;
+            position: relative;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+        }
+        body.dark .fullscreen-card {
+            background: rgba(8, 14, 28, 0.95);
+            border: 1px solid rgba(80, 160, 255, 0.08);
+        }
+        body.light .fullscreen-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(80, 160, 255, 0.12);
+        }
+        .fullscreen-card .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 1.6rem;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: 0.2s;
+            color: inherit;
+        }
+        .fullscreen-card .close-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .fullscreen-card .fc-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 12px;
+            display: block;
+            border: 3px solid rgba(80, 160, 255, 0.15);
+            box-shadow: 0 0 60px rgba(60, 140, 255, 0.06);
+        }
+        .fullscreen-card .fc-name {
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        body.dark .fullscreen-card .fc-name {
+            color: #e0f0ff;
+        }
+        body.light .fullscreen-card .fc-name {
+            color: #1a3a5a;
+        }
+        .fullscreen-card .fc-rank {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+        .fullscreen-card .fc-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(80, 160, 255, 0.04);
+            font-size: 0.85rem;
+            gap: 8px;
+        }
+        .fullscreen-card .fc-field .fc-label {
+            font-weight: 700;
+            opacity: 0.5;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+        }
+        .fullscreen-card .fc-field .fc-value {
+            font-weight: 600;
+            text-align: right;
+            word-break: break-word;
+        }
+        .fullscreen-card .fc-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .fullscreen-card .fc-actions .btn {
+            padding: 8px 20px;
+            font-size: 0.85rem;
+        }
+        .ghost-hint {
+            position: fixed;
+            bottom: 8px;
+            right: 12px;
+            font-size: 0.4rem;
+            letter-spacing: 2px;
+            opacity: 0.04;
+            pointer-events: none;
+            user-select: none;
+            font-weight: 700;
+        }
+        #debugTrigger {
+            position: fixed;
+            bottom: 8px;
+            left: 12px;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            z-index: 9999;
+            display: none;
+            backdrop-filter: blur(4px);
+            border: 1px solid #00ff66;
+            color: #00ff66;
+            background: rgba(0, 255, 100, 0.06);
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px 12px;
+                border-radius: 24px;
+            }
+            .top-bar .logo h1 {
+                font-size: 1.4rem;
+            }
+            .top-bar .actions .desktop-only {
+                display: none;
+            }
+            .top-bar .actions .mobile-menu-btn {
+                display: block;
+            }
+            .top-bar .actions .mobile-dropdown.open {
+                display: flex;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+            .stat-item {
+                padding: 6px 8px;
+            }
+            .stat-item .number {
+                font-size: 1.2rem;
+            }
+            .info-card {
+                padding: 14px 16px;
+            }
+            .block-item .block-image {
+                height: 120px;
+            }
+            .fullscreen-card .fc-photo {
+                width: 100px;
+                height: 100px;
+            }
+            .fullscreen-card .fc-name {
+                font-size: 1.3rem;
+            }
+            .db-table-wrap table {
+                font-size: 0.65rem;
+                min-width: 480px;
+            }
+            .db-card {
+                padding: 12px 14px;
+            }
+            .modal {
+                padding: 18px 16px;
+                margin: 10px;
+            }
+            .btn {
+                font-size: 0.65rem;
+                padding: 4px 10px;
+            }
+        }
+    </style>
+</head>
+<body class="dark">
 
+    <div class="holo-bg"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="toast-container" id="toastContainer"></div>
+    <div id="debugTrigger">⚡</div>
+
+    <!-- МОДАЛКИ -->
+    <div class="modal-overlay" id="adminPwdOverlay"><div class="modal"><h3>🔐 Доступ администратора</h3><p>Введите пароль</p><input type="password" id="adminPwdInput" placeholder="Пароль" maxlength="20" autofocus><div class="modal-error" id="adminPwdError"></div><div class="modal-actions"><button class="btn-cancel" id="adminPwdCancel">Отмена</button><button class="btn-confirm" id="adminPwdConfirm">Войти</button></div></div></div>
+    <div class="modal-overlay" id="editPwdOverlay"><div class="modal"><h3>🔐 Редактирование</h3><p>Введите пароль</p><input type="password" id="editPwdInput" placeholder="Пароль" maxlength="20" autofocus><div class="modal-error" id="editPwdError"></div><div class="modal-actions"><button class="btn-cancel" id="editPwdCancel">Отмена</button><button class="btn-confirm" id="editPwdConfirm">Подтвердить</button></div></div></div>
+    <div class="modal-overlay" id="observerPwdOverlay"><div class="modal"><h3>👁️ Наблюдатель</h3><p>Введите пароль</p><input type="password" id="observerPwdInput" placeholder="Пароль" maxlength="20" autofocus><div class="modal-error" id="observerPwdError"></div><div class="modal-actions"><button class="btn-cancel" id="observerPwdCancel">Отмена</button><button class="btn-confirm" id="observerPwdConfirm">Войти</button></div></div></div>
+    <div class="modal-overlay" id="dbPwdOverlay"><div class="modal"><h3>🗄️ Доступ к БД</h3><p>Введите пароль</p><input type="password" id="dbModalPwdInput" placeholder="Пароль БД" maxlength="20" autofocus><div class="modal-error" id="dbModalPwdError"></div><div class="modal-actions"><button class="btn-cancel" id="dbModalPwdCancel">Отмена</button><button class="btn-confirm" id="dbModalPwdConfirm">Открыть</button></div></div></div>
+    <div class="modal-overlay" id="badgeChoiceOverlay"><div class="modal"><h3>🪪 Настройка бейджа</h3><p>Что отображать на бейдже?</p><select id="badgeChoiceSelect"><option value="fio">ФИО</option><option value="callsign">Позывной</option><option value="both">ФИО + Позывной</option></select><div class="modal-actions"><button class="btn-cancel" id="badgeChoiceCancel">Отмена</button><button class="btn-confirm" id="badgeChoiceConfirm">Сгенерировать</button></div></div></div>
+    <div class="modal-overlay modal-block" id="blockModal"><div class="modal"><h3 id="blockModalTitle">➕ Добавить блок</h3><p>Заполните информацию</p><div class="field"><label>Заголовок</label><input type="text" id="blockTitle" placeholder="Заголовок"></div><div class="field"><label>Содержание</label><textarea id="blockContent" rows="3" placeholder="Текст..."></textarea></div><div class="field"><label>Фото</label><input type="file" id="blockImageInput" accept="image/*"><img id="blockImagePreview" class="photo-preview" style="display:none;" alt="Превью"></div><div class="modal-error" id="blockModalError"></div><div class="modal-actions"><button class="btn-cancel" id="blockModalCancel">Отмена</button><button class="btn-confirm" id="blockModalConfirm">Сохранить</button></div></div></div>
+
+    <!-- ПОЛНОЭКРАННАЯ КАРТОЧКА -->
+    <div class="fullscreen-card-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-card" id="fullscreenCard">
+            <button class="close-btn" id="fullscreenClose">✕</button>
+            <img class="fc-photo" id="fcPhoto" src="" alt="Фото">
+            <div class="fc-name" id="fcName">—</div>
+            <div class="fc-rank" id="fcRank">—</div>
+            <div id="fcFields"></div>
+            <div class="fc-actions">
+                <button class="btn btn-primary" id="fcEditBtn">✎ Редактировать</button>
+                <button class="btn btn-success" id="fcBadgeBtn">🪪 Бейдж PDF</button>
+                <button class="btn" id="fcCloseBtn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
+    <div class="container" id="app">
+        <div class="top-bar">
+            <div class="left" id="logoTrigger">
+                <div class="logo">
+                    <h1 class="editable" contenteditable="false" id="orgName">ВЧК</h1>
+                    <div class="sub editable" contenteditable="false" id="orgSubtitle">Всекрымская Чрезвычайная Комиссия</div>
+                </div>
+                <div class="badge editable" contenteditable="false" id="orgBadge" style="font-weight:700; opacity:0.6; font-size:0.6rem; letter-spacing:2px;">⚡ оперативный отдел</div>
+            </div>
+            <div class="actions">
+                <button class="btn" id="themeToggle">🌓</button>
+                <div class="desktop-only">
+                    <button class="btn btn-primary admin-only" id="editToggleBtn">✎ Редактировать</button>
+                    <button class="btn btn-warning admin-only" id="observerToggleBtn">👁️ Наблюдатель</button>
+                    <button class="btn admin-only" id="trashToggleBtn">🗑️ Корзина</button>
+                </div>
+                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+                <div class="mobile-dropdown" id="mobileDropdown">
+                    <button class="btn btn-primary admin-only mobile-btn" data-target="editToggleBtn">✎ Редактировать</button>
+                    <button class="btn btn-warning admin-only mobile-btn" data-target="observerToggleBtn">👁️ Наблюдатель</button>
+                    <button class="btn admin-only mobile-btn" data-target="trashToggleBtn">🗑️ Корзина</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats" id="statsPanel">
+            <div class="stat-item"><div class="number" id="totalCount">0</div><div class="label">Сотрудников</div></div>
+            <div class="stat-item"><div class="number" id="deptCount">0</div><div class="label">Отделов</div></div>
+            <div class="stat-item"><div class="number" id="avgAge">0</div><div class="label">Средний стаж</div></div>
+            <div class="stat-item"><div class="number" id="chiefCount">0</div><div class="label">Руководителей</div></div>
+        </div>
+
+        <div id="publicCard">
+            <div class="public-grid">
+                <div class="info-card">
+                    <div class="title editable" contenteditable="false" id="section1Title">О структуре</div>
+                    <div class="text-block editable" contenteditable="false" id="section1Text1">Всекрымская Чрезвычайная Комиссия создана для координации специальных мероприятий, обеспечения внутренней безопасности и оперативного реагирования на угрозы.</div>
+                    <div class="text-block editable" contenteditable="false" id="section1Text2">Подразделение работает в тесном взаимодействии с аналитическим центром и службами технического контроля.</div>
+                    <div class="mission-block editable" contenteditable="false" id="missionText">«Порядок — основа силы. Безопасность — результат контроля.»</div>
+                </div>
+                <div class="info-card">
+                    <div class="title editable" contenteditable="false" id="section2Title">Контактная информация</div>
+                    <div class="contact-line"><span class="label editable" contenteditable="false" id="contactLabel1">Адрес</span><span class="value editable" contenteditable="false" id="contactValue1">г. Симферополь, ул. Революции, 12</span></div>
+                    <div class="contact-line"><span class="label editable" contenteditable="false" id="contactLabel2">Телефон</span><span class="value editable" contenteditable="false" id="contactValue2">+7 (978) 000-00-01</span></div>
+                    <div class="contact-line"><span class="label editable" contenteditable="false" id="contactLabel3">Эл. почта</span><span class="value editable" contenteditable="false" id="contactValue3">contact@vchk.gov</span></div>
+                    <div class="contact-line"><span class="label editable" contenteditable="false" id="contactLabel4">Режим работы</span><span class="value editable" contenteditable="false" id="contactValue4">круглосуточно</span></div>
+                    <div class="status-indicator"><span class="status-dot"></span><span class="editable" contenteditable="false" id="statusText">система активна</span></div>
+                </div>
+            </div>
+
+            <div class="blocks-section" id="blocksSection">
+                <div class="section-header">
+                    <h2>📰 Наша деятельность</h2>
+                    <button class="btn btn-success admin-only" id="addBlockBtn">➕ Добавить блок</button>
+                </div>
+                <div class="blocks-grid" id="blocksGrid"></div>
+            </div>
+        </div>
+
+        <div id="dbHiddenPanel">
+            <div id="dbInterface" class="hidden">
+                <div class="db-panel">
+                    <div class="db-card">
+                        <h3>Карточка сотрудника</h3>
+                        <div class="field"><label>Фото</label><div class="photo-upload"><img id="previewPhoto" src="" alt="Фото"><input type="file" id="photoInput" accept="image/*" style="background:transparent; border:none; font-size:0.75rem;"></div></div>
+                        <div class="field"><label>ФИО *</label><input type="text" id="fio" placeholder="Иванов Иван Иванович"></div>
+                        <div class="field"><label>Позывной</label><input type="text" id="callsign" placeholder="Сокол"></div>
+                        <div class="field"><label>Дата рождения</label><input type="date" id="birthDate"></div>
+                        <div class="field"><label>Пол</label><select id="gender"><option value="">—</option><option>Мужской</option><option>Женский</option></select></div>
+                        <div class="field"><label>Гражданство</label><input type="text" id="citizenship" placeholder="РФ"></div>
+                        <div class="field"><label>Образование</label><input type="text" id="education" placeholder="Высшее"></div>
+                        <div class="field"><label>Семейное положение</label><input type="text" id="family" placeholder="Женат/Замужем"></div>
+                        <div class="field"><label>Адрес</label><input type="text" id="address" placeholder="г. Симферополь, ул..."></div>
+                        <div class="field"><label>Отдел</label><input type="text" id="department" placeholder="Аналитический отдел"></div>
+                        <div class="field"><label>Должность / звание</label><input type="text" id="rank" placeholder="Майор, начальник отдела"></div>
+                        <div class="field"><label>Прямой руководитель</label><input type="text" id="chief" placeholder="ФИО начальника"></div>
+                        <div class="field"><label>Телефон</label><input type="text" id="phone" placeholder="+7 (978) 000-00-00"></div>
+                        <div class="field"><label>Соцсети</label><input type="text" id="social" placeholder="tg: @username, vk: id..."></div>
+                        <div class="field"><label>Дата вступления</label><input type="date" id="joinDate"></div>
+                        <div class="field"><label>Особые отметки</label><textarea id="notes" rows="2" placeholder="Внутренние пометки..."></textarea></div>
+                        <div class="field"><label>Прикреплённые файлы</label><div class="file-upload"><input type="file" id="fileInput" multiple><div class="file-list" id="fileList"></div></div></div>
+                        <div class="btn-group">
+                            <button class="btn btn-success" id="addBtn">➕ Добавить</button>
+                            <button class="btn btn-primary" id="updateBtn">💾 Обновить</button>
+                            <button class="btn btn-danger" id="deleteBtn">🗑 Удалить</button>
+                            <button class="btn" id="clearFieldsBtn">Очистить</button>
+                        </div>
+                        <div style="margin-top:6px; font-size:0.65rem; opacity:0.5;" id="selectedIdDisplay">Выбрано: нет</div>
+                    </div>
+
+                    <div class="db-card">
+                        <h3>База данных</h3>
+                        <div class="db-table-wrap">
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="🔍 Поиск...">
+                                <select id="filterDept"><option value="">Все отделы</option></select>
+                                <div class="mass-actions">
+                                    <button class="btn btn-danger admin-only" id="massDeleteBtn" style="font-size:0.55rem;">🗑</button>
+                                    <button class="btn admin-only" id="massExportBtn" style="font-size:0.55rem;">📤</button>
+                                </div>
+                                <button class="btn" id="clearSearchBtn" style="padding:2px 10px; font-size:0.6rem;">✕</button>
+                            </div>
+                            <table>
+                                <thead><tr><th style="width:24px;"><input type="checkbox" id="selectAll" class="admin-only"></th><th data-sort="photo">Фото</th><th data-sort="fio">ФИО ⬍</th><th data-sort="rank">Должность</th><th data-sort="department">Отдел</th><th data-sort="chief">Руководитель</th><th>Действие</th></tr></thead>
+                                <tbody id="dbTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="db-footer-actions">
+                            <button class="btn" id="exportPdfBtn">📄 PDF</button>
+                            <button class="btn" id="exportCsvBtn">📊 CSV</button>
+                            <button class="btn" id="exportJsonBtn">📤 JSON</button>
+                            <button class="btn" id="importJsonBtn">📥 JSON</button>
+                            <input type="file" id="importFileInput" accept=".json" style="display:none;">
+                            <button class="btn" id="showLogBtn">📋 Лог</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="logPanel" style="display:none; margin-top:12px; padding:10px; border-radius:20px; transition:background 0.3s; max-height:160px; overflow-y:auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><h4 style="font-weight:700; font-size:0.85rem;">📋 История</h4><button class="btn admin-only" id="clearLogBtn" style="padding:2px 12px; font-size:0.6rem;">Очистить</button></div>
+                    <div id="logContent" style="font-size:0.75rem; line-height:1.5;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trashPanel" class="admin-only">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><h4 style="font-weight:700; font-size:0.85rem;">🗑️ Корзина</h4><button class="btn btn-danger admin-only" id="clearTrashBtn" style="padding:2px 12px; font-size:0.6rem;">Очистить</button></div>
+            <div id="trashContent"></div>
+        </div>
+
+        <div class="ghost-hint">ВЧК • Абсолют</div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. ПАРОЛИ
+        // ============================================================
+        const EDITOR_PASSWORD = 'jaben';
+        const DB_PASSWORD = '180988';
+        const OBSERVER_PASSWORD = 'observer';
+        const ADMIN_PASSWORD = 'jaben';
+
+        // ============================================================
+        // 2. СОСТОЯНИЕ
+        // ============================================================
+        let isAdmin = false;
+        let observerMode = false;
+        let editModeActive = false;
+        let currentEditId = null;
+        let dbRecords = JSON.parse(localStorage.getItem('vchk_db')) || [];
+        let blocks = JSON.parse(localStorage.getItem('vchk_blocks')) || [];
+        let log = JSON.parse(localStorage.getItem('vchk_log')) || [];
+        let currentFiles = [];
+        let currentSort = { field: 'fio', asc: true };
+        let formChanged = false;
+
+        // ============================================================
+        // 3. TOAST
+        // ============================================================
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0';
+                setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        // ============================================================
+        // 4. ЛОГ
+        // ============================================================
+        function addLog(action, detail = '') {
+            if (!isAdmin) return;
+            log.unshift({ time: new Date().toLocaleString(), action, detail });
+            if (log.length > 100) log.pop();
+            localStorage.setItem('vchk_log', JSON.stringify(log));
+            renderLog();
+        }
+
+        function renderLog() {
+            document.getElementById('logContent').innerHTML = log.map(e =>
+                `<div style="opacity:0.7; padding:2px 0; border-bottom:1px solid rgba(80,160,255,0.04);"><strong>${e.time}</strong> — ${e.action} ${e.detail ? '— ' + e.detail : ''}</div>`
+            ).join('');
+        }
+
+        // ============================================================
+        // 5. БЛОКИ
+        // ============================================================
+        function renderBlocks() {
+            const grid = document.getElementById('blocksGrid');
+            grid.innerHTML = '';
+            if (blocks.length === 0) {
+                grid.innerHTML =
+                    `<div style="grid-column:1/-1; text-align:center; opacity:0.4; padding:30px;">Нет блоков</div>`;
+                return;
+            }
+            blocks.forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'block-item';
+                div.innerHTML = `
+                    ${b.image ? `<img class="block-image" src="${b.image}" alt="${b.title}">` : ''}
+                    <div class="block-title">${b.title || 'Без заголовка'}</div>
+                    <div class="block-text">${b.content || ''}</div>
+                    ${isAdmin ? `<div class="block-actions"><button class="btn btn-primary" data-action="edit" data-id="${b.id}">✎</button><button class="btn btn-danger" data-action="delete" data-id="${b.id}">✕</button></div>` : ''}
+                `;
+                grid.appendChild(div);
+                if (isAdmin) {
+                    div.querySelector('[data-action="edit"]')?.addEventListener('click', e => { e.stopPropagation();
+                        openBlockModal(b.id); });
+                    div.querySelector('[data-action="delete"]')?.addEventListener('click', e => { e.stopPropagation(); if (
+                            confirm(`Удалить блок "${b.title || 'без заголовка'}"?`)) { blocks = blocks.filter(x => x
+                                .id !== b.id);
+                            saveBlocks();
+                            renderBlocks();
+                            showToast('Блок удалён', 'warning'); } });
+                }
+            });
+        }
+
+        function saveBlocks() { localStorage.setItem('vchk_blocks', JSON.stringify(blocks)); }
+
+        function openBlockModal(id = null) {
+            const modal = document.getElementById('blockModal');
+            document.getElementById('blockModalTitle').textContent = id ? '✎ Редактировать блок' : '➕ Добавить блок';
+            const block = id ? blocks.find(b => b.id === id) : null;
+            document.getElementById('blockTitle').value = block?.title || '';
+            document.getElementById('blockContent').value = block?.content || '';
+            const preview = document.getElementById('blockImagePreview');
+            if (block?.image) { preview.src = block.image;
+                preview.style.display = 'block'; } else { preview.style.display = 'none';
+                preview.src = ''; }
+            document.getElementById('blockImageInput').value = '';
+            document.getElementById('blockModalError').textContent = '';
+            modal.dataset.editId = id || '';
+            modal.classList.add('show');
+        }
+
+        function closeBlockModal() { document.getElementById('blockModal').classList.remove('show'); }
+
+        document.getElementById('blockImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => { const p = document.getElementById('blockImagePreview');
+                p.src = ev.target.result;
+                p.style.display = 'block'; };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('blockModalConfirm').addEventListener('click', function() {
+            const title = document.getElementById('blockTitle').value.trim();
+            const content = document.getElementById('blockContent').value.trim();
+            const preview = document.getElementById('blockImagePreview');
+            const error = document.getElementById('blockModalError');
+            if (!title && !content && !preview.src) { error.textContent = '❌ Заполните хотя бы одно поле'; return; }
+            error.textContent = '';
+            const image = preview.src && preview.style.display !== 'none' ? preview.src : '';
+            const id = document.getElementById('blockModal').dataset.editId;
+            if (id) {
+                const b = blocks.find(x => x.id === id);
+                if (b) { b.title = title;
+                    b.content = content; if (image) b.image = image;
+                    saveBlocks();
+                    renderBlocks();
+                    showToast('Блок обновлён', 'success'); }
+            } else {
+                blocks.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title, content,
+                    image });
+                saveBlocks();
+                renderBlocks();
+                showToast('Блок добавлен', 'success');
+            }
+            closeBlockModal();
+        });
+        document.getElementById('blockModalCancel').addEventListener('click', closeBlockModal);
+        document.getElementById('blockModal').addEventListener('click', e => { if (e.target === e.currentTarget)
+                closeBlockModal(); });
+
+        // ============================================================
+        // 6. АДМИН-ВХОД
+        // ============================================================
+        let logoClickCount = 0,
+            logoClickTimer = null;
+        document.getElementById('logoTrigger').addEventListener('click', () => {
+            logoClickCount++;
+            if (logoClickCount === 1) { logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 600); } else if (
+                logoClickCount === 2) {
+                clearTimeout(logoClickTimer);
+                logoClickCount = 0;
+                if (!isAdmin) {
+                    document.getElementById('adminPwdOverlay').classList.add('show');
+                    document.getElementById('adminPwdInput').value = '';
+                    document.getElementById('adminPwdError').textContent = '';
+                    setTimeout(() => document.getElementById('adminPwdInput').focus(), 100);
+                } else { showToast('Вы уже авторизованы', 'warning'); }
+            }
+        });
+
+        document.getElementById('adminPwdConfirm').addEventListener('click', function() {
+            if (document.getElementById('adminPwdInput').value === ADMIN_PASSWORD) {
+                document.getElementById('adminPwdOverlay').classList.remove('show');
+                isAdmin = true;
+                document.querySelectorAll('.admin-only').forEach(el => { el.classList.add('visible'); });
+                renderBlocks();
+                renderTable();
+                renderTrash();
+                showToast('Добро пожаловать, администратор!', 'success');
+                addLog('Авторизация', 'успешный вход');
+            } else {
+                document.getElementById('adminPwdError').textContent = '❌ Неверный пароль';
+                document.getElementById('adminPwdInput').value = '';
+                document.getElementById('adminPwdInput').focus();
+            }
+        });
+        document.getElementById('adminPwdCancel').addEventListener('click', () => { document.getElementById(
+                'adminPwdOverlay').classList.remove('show');
+            document.getElementById('adminPwdError').textContent = ''; });
+        document.getElementById('adminPwdInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document
+                .getElementById('adminPwdConfirm').click(); if (e.key === 'Escape') document.getElementById(
+                    'adminPwdCancel').click(); });
+        document.getElementById('adminPwdOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget)
+                document.getElementById('adminPwdCancel').click(); });
+
+        // ============================================================
+        // 7. ТЕМА
+        // ============================================================
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            document.body.classList.toggle('light');
+            localStorage.setItem('vchk_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+        });
+        if (localStorage.getItem('vchk_theme') === 'light') { document.body.classList.remove('dark');
+            document.body.classList.add('light'); }
+
+        // ============================================================
+        // 8. МОБИЛЬНОЕ МЕНЮ
+        // ============================================================
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileDropdown').classList.toggle('open');
+        });
+        document.querySelectorAll('.mobile-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.dataset.target;
+                const targetBtn = document.getElementById(targetId);
+                if (targetBtn) { targetBtn.click();
+                    document.getElementById('mobileDropdown').classList.remove('open'); }
+            });
+        });
+
+        // ============================================================
+        // 9. РЕДАКТОР КАРТОЧКИ
+        // ============================================================
+        const editableElements = document.querySelectorAll('.editable');
+        const publicCard = document.getElementById('publicCard');
+
+        function enableEditMode() {
+            editModeActive = true;
+            publicCard.classList.add('edit-mode');
+            editableElements.forEach(el => el.contentEditable = 'true');
+            document.getElementById('editToggleBtn').textContent = '💾 Сохранить';
+            document.getElementById('editToggleBtn').classList.add('btn-primary');
+            localStorage.setItem('vchk_edit_mode', 'true');
+            editableElements.forEach(el => { el.addEventListener('input', saveCardContent); });
+            showToast('Режим редактирования включён', 'success');
+        }
+
+        function disableEditMode() {
+            editModeActive = false;
+            publicCard.classList.remove('edit-mode');
+            editableElements.forEach(el => { el.contentEditable = 'false';
+                el.removeEventListener('input', saveCardContent); });
+            document.getElementById('editToggleBtn').textContent = '✎ Редактировать';
+            document.getElementById('editToggleBtn').classList.remove('btn-primary');
+            localStorage.setItem('vchk_edit_mode', 'false');
+            saveCardContent();
+            showToast('Режим редактирования выключен', 'warning');
+        }
+
+        function saveCardContent() {
+            const data = {};
+            editableElements.forEach(el => { data[el.id] = el.innerHTML; });
+            localStorage.setItem('vchk_card_data', JSON.stringify(data));
+        }
+
+        function loadCardContent() {
+            const raw = localStorage.getItem('vchk_card_data');
+            if (!raw) return;
+            try {
+                const data = JSON.parse(raw);
+                editableElements.forEach(el => { if (data[el.id] !== undefined) el.innerHTML = data[el.id]; });
+            } catch (e) {}
+        }
+
+        document.getElementById('editToggleBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (editModeActive) { disableEditMode(); return; }
+            document.getElementById('editPwdOverlay').classList.add('show');
+            document.getElementById('editPwdInput').value = '';
+            document.getElementById('editPwdError').textContent = '';
+            setTimeout(() => document.getElementById('editPwdInput').focus(), 100);
+        });
+
+        document.getElementById('editPwdConfirm').addEventListener('click', function() {
+            if (document.getElementById('editPwdInput').value === EDITOR_PASSWORD) {
+                document.getElementById('editPwdOverlay').classList.remove('show');
+                enableEditMode();
+            } else {
+                document.getElementById('editPwdError').textContent = '❌ Неверный пароль';
+                document.getElementById('editPwdInput').value = '';
+                document.getElementById('editPwdInput').focus();
+            }
+        });
+        document.getElementById('editPwdCancel').addEventListener('click', () => { document.getElementById(
+                'editPwdOverlay').classList.remove('show');
+            document.getElementById('editPwdError').textContent = ''; });
+        document.getElementById('editPwdInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document
+                .getElementById('editPwdConfirm').click(); if (e.key === 'Escape') document.getElementById(
+                    'editPwdCancel').click(); });
+        document.getElementById('editPwdOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget)
+                document.getElementById('editPwdCancel').click(); });
+
+        // ============================================================
+        // 10. НАБЛЮДАТЕЛЬ
+        // ============================================================
+        document.getElementById('observerToggleBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (observerMode) {
+                observerMode = false;
+                this.textContent = '👁️ Наблюдатель';
+                this.classList.remove('btn-primary');
+                showToast('Режим наблюдателя выключен', 'warning');
+                return;
+            }
+            document.getElementById('observerPwdOverlay').classList.add('show');
+            document.getElementById('observerPwdInput').value = '';
+            document.getElementById('observerPwdError').textContent = '';
+            setTimeout(() => document.getElementById('observerPwdInput').focus(), 100);
+        });
+
+        document.getElementById('observerPwdConfirm').addEventListener('click', function() {
+            if (document.getElementById('observerPwdInput').value === OBSERVER_PASSWORD) {
+                document.getElementById('observerPwdOverlay').classList.remove('show');
+                observerMode = true;
+                const btn = document.getElementById('observerToggleBtn');
+                btn.textContent = '👁️ Наблюдатель (ON)';
+                btn.classList.add('btn-primary');
+                showToast('Режим наблюдателя включён (только просмотр)', 'success');
+                const panel = document.getElementById('dbHiddenPanel');
+                const dbInterface = document.getElementById('dbInterface');
+                panel.classList.add('active');
+                dbInterface.classList.remove('hidden');
+                renderTable();
+            } else {
+                document.getElementById('observerPwdError').textContent = '❌ Неверный пароль';
+                document.getElementById('observerPwdInput').value = '';
+                document.getElementById('observerPwdInput').focus();
+            }
+        });
+        document.getElementById('observerPwdCancel').addEventListener('click', () => { document.getElementById(
+                'observerPwdOverlay').classList.remove('show');
+            document.getElementById('observerPwdError').textContent = ''; });
+        document.getElementById('observerPwdInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') document
+                .getElementById('observerPwdConfirm').click(); if (e.key === 'Escape') document.getElementById(
+                    'observerPwdCancel').click(); });
+        document.getElementById('observerPwdOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget)
+                document.getElementById('observerPwdCancel').click(); });
+
+        // ============================================================
+        // 11. КОРЗИНА
+        // ============================================================
+        function renderTrash() {
+            const trash = JSON.parse(localStorage.getItem('vchk_trash')) || [];
+            const c = document.getElementById('trashContent');
+            c.innerHTML = '';
+            if (trash.length === 0) { c.innerHTML =
+                    `<div style="opacity:0.4; text-align:center; padding:12px;">Корзина пуста</div>`; return; }
+            trash.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'trash-item';
+                div.innerHTML =
+                    `<span><strong>${item.fio || '—'}</strong> ${item.department ? '— ' + item.department : ''} <span style="opacity:0.4; font-size:0.6rem;">${item.deletedAt || ''}</span></span><button class="restore-btn" data-idx="${idx}">↩</button>`;
+                c.appendChild(div);
+                div.querySelector('.restore-btn').addEventListener('click', () => {
+                    if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+                    const restored = trash.splice(idx, 1)[0];
+                    localStorage.setItem('vchk_trash', JSON.stringify(trash));
+                    dbRecords.push(restored);
+                    delete restored.deletedAt;
+                    saveToStorage();
+                    addLog('Восстановление', `${restored.fio}`);
+                    renderTable();
+                    renderTrash();
+                    showToast(`Запись "${restored.fio}" восстановлена`, 'success');
+                });
+            });
+        }
+
+        document.getElementById('trashToggleBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            document.getElementById('trashPanel').classList.toggle('active');
+            renderTrash();
+        });
+        document.getElementById('clearTrashBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const trash = JSON.parse(localStorage.getItem('vchk_trash')) || [];
+            if (trash.length === 0) return;
+            if (confirm('Очистить корзину?')) { localStorage.setItem('vchk_trash', JSON.stringify([]));
+                renderTrash();
+                showToast('Корзина очищена', 'warning'); }
+        });
+
+        // ============================================================
+        // 12. БАЗА ДАННЫХ
+        // ============================================================
+        function saveToStorage() {
+            localStorage.setItem('vchk_db', JSON.stringify(dbRecords));
+            updateStats();
+            updateFilterOptions();
+        }
+
+        function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+        function getFormData() {
+            return {
+                photo: document.getElementById('previewPhoto').src || '',
+                fio: document.getElementById('fio').value.trim(),
+                callsign: document.getElementById('callsign').value.trim(),
+                birthDate: document.getElementById('birthDate').value,
+                gender: document.getElementById('gender').value,
+                citizenship: document.getElementById('citizenship').value.trim(),
+                education: document.getElementById('education').value.trim(),
+                family: document.getElementById('family').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                rank: document.getElementById('rank').value.trim(),
+                chief: document.getElementById('chief').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                social: document.getElementById('social').value.trim(),
+                joinDate: document.getElementById('joinDate').value,
+                notes: document.getElementById('notes').value.trim(),
+                files: currentFiles.map(f => ({ name: f.name, size: f.size, type: f.type })),
+                lastModified: new Date().toLocaleString()
+            };
+        }
+
+        function fillForm(data) {
+            document.getElementById('previewPhoto').src = data.photo || '';
+            document.getElementById('fio').value = data.fio || '';
+            document.getElementById('callsign').value = data.callsign || '';
+            document.getElementById('birthDate').value = data.birthDate || '';
+            document.getElementById('gender').value = data.gender || '';
+            document.getElementById('citizenship').value = data.citizenship || '';
+            document.getElementById('education').value = data.education || '';
+            document.getElementById('family').value = data.family || '';
+            document.getElementById('address').value = data.address || '';
+            document.getElementById('department').value = data.department || '';
+            document.getElementById('rank').value = data.rank || '';
+            document.getElementById('chief').value = data.chief || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('social').value = data.social || '';
+            document.getElementById('joinDate').value = data.joinDate || '';
+            document.getElementById('notes').value = data.notes || '';
+            currentFiles = data.files || [];
+            renderFiles();
+            formChanged = false;
+            if (data.lastModified) {
+                document.getElementById('selectedIdDisplay').textContent =
+                    `Посл. изм: ${data.lastModified}`;
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('previewPhoto').src = '';
+            document.getElementById('fio').value = '';
+            document.getElementById('callsign').value = '';
+            document.getElementById('birthDate').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('citizenship').value = '';
+            document.getElementById('education').value = '';
+            document.getElementById('family').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('department').value = '';
+            document.getElementById('rank').value = '';
+            document.getElementById('chief').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('social').value = '';
+            document.getElementById('joinDate').value = '';
+            document.getElementById('notes').value = '';
+            currentFiles = [];
+            renderFiles();
+            document.getElementById('photoInput').value = '';
+            currentEditId = null;
+            document.getElementById('selectedIdDisplay').textContent = 'Выбрано: нет';
+            formChanged = false;
+        }
+
+        function renderFiles() {
+            const list = document.getElementById('fileList');
+            list.innerHTML = currentFiles.map((f, i) =>
+                `<span class="file-tag">📎 ${f.name} <span class="remove-file" data-idx="${i}">✕</span></span>`
+            ).join('');
+            list.querySelectorAll('.remove-file').forEach(el => {
+                el.addEventListener('click', () => { currentFiles.splice(parseInt(el.dataset.idx), 1);
+                    renderFiles(); });
+            });
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            for (let f of files) { currentFiles.push({ name: f.name, size: f.size, type: f.type, data: null }); }
+            renderFiles();
+            this.value = '';
+            formChanged = true;
+        });
+
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => { document.getElementById('previewPhoto').src = ev.target.result; };
+            reader.readAsDataURL(file);
+        });
+
+        document.querySelectorAll('.db-card input, .db-card textarea, .db-card select').forEach(el => {
+            el.addEventListener('input', () => { if (currentEditId) formChanged = true; });
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (formChanged && currentEditId) { e.preventDefault();
+                e.returnValue = ''; }
+        });
+
+        function getFilteredAndSorted() {
+            let list = [...dbRecords];
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const dept = document.getElementById('filterDept').value;
+            if (q) {
+                list = list.filter(r =>
+                    (r.fio || '').toLowerCase().includes(q) ||
+                    (r.callsign || '').toLowerCase().includes(q) ||
+                    (r.department || '').toLowerCase().includes(q) ||
+                    (r.rank || '').toLowerCase().includes(q) ||
+                    (r.chief || '').toLowerCase().includes(q)
+                );
+            }
+            if (dept) { list = list.filter(r => r.department === dept); }
+            const field = currentSort.field;
+            const asc = currentSort.asc;
+            list.sort((a, b) => {
+                let va = (a[field] || '').toString().toLowerCase();
+                let vb = (b[field] || '').toString().toLowerCase();
+                if (field === 'joinDate' || field === 'birthDate') { va = a[field] || '';
+                    vb = b[field] || ''; }
+                if (va < vb) return asc ? -1 : 1;
+                if (va > vb) return asc ? 1 : -1;
+                return 0;
+            });
+            return list;
+        }
+
+        function renderTable() {
+            const list = getFilteredAndSorted();
+            const tbody = document.getElementById('dbTableBody');
+            tbody.innerHTML = '';
+            if (list.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="7" style="text-align:center; opacity:0.4; padding:20px;">Нет записей</td></tr>`;
+                if (document.getElementById('selectAll')) document.getElementById('selectAll').checked = false;
+                return;
+            }
+            list.forEach((rec) => {
+                const tr = document.createElement('tr');
+                const isAdminVisible = isAdmin ? '' : 'admin-only';
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="row-checkbox ${isAdminVisible}" data-id="${rec.id}"></td>
+                    <td><img src="${rec.photo || ''}" alt="фото" onerror="this.src=''"></td>
+                    <td><strong>${rec.fio || '—'}</strong>${rec.callsign ? ` (${rec.callsign})` : ''}</td>
+                    <td>${rec.rank || '—'}</td>
+                    <td>${rec.department || '—'}</td>
+                    <td>${rec.chief || '—'}</td>
+                    <td>
+                        <button class="btn btn-primary" style="padding:2px 8px; font-size:0.55rem;" data-id="${rec.id}">✎</button>
+                        <button class="btn btn-danger" style="padding:2px 8px; font-size:0.55rem;" data-id="${rec.id}">✕</button>
+                        <button class="btn" style="padding:2px 8px; font-size:0.55rem; background:rgba(80,160,255,0.1);" data-id="${rec.id}" data-expand="1">📂</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                tr.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+                    openFullscreen(rec);
+                });
+
+                tr.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const id = btn.dataset.id;
+                        const record = dbRecords.find(r => r.id === id);
+                        if (!record) return;
+                        if (btn.dataset.expand) { openFullscreen(record); return; }
+                        if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+                        if (observerMode) { showToast('Наблюдатель — заблокировано',
+                            'warning'); return; }
+                        if (btn.textContent.trim() === '✎') {
+                            fillForm(record);
+                            currentEditId = id;
+                            document.getElementById('selectedIdDisplay').textContent =
+                                `Выбрано: ${record.fio || 'без ФИО'}${record.callsign ? ' (' + record.callsign + ')' : ''}`;
+                            showToast(`Загружена запись: ${record.fio}`, 'success');
+                        } else if (btn.textContent.trim() === '✕') {
+                            if (confirm(`Удалить запись "${record.fio || 'без ФИО'}"?`)) {
+                                let trash = JSON.parse(localStorage.getItem('vchk_trash')) || [];
+                                trash.push({ ...record, deletedAt: new Date().toISOString() });
+                                localStorage.setItem('vchk_trash', JSON.stringify(trash));
+                                dbRecords = dbRecords.filter(r => r.id !== id);
+                                saveToStorage();
+                                addLog('Удаление', `${record.fio || 'без ФИО'}`);
+                                renderTable();
+                                if (currentEditId === id) clearForm();
+                                showToast(`Запись "${record.fio}" в корзине`, 'warning');
+                                renderTrash();
+                            }
+                        }
+                    });
+                });
+
+                const cb = tr.querySelector('.row-checkbox');
+                if (cb) { cb.addEventListener('change', () => { updateSelectAllState(); }); }
+            });
+            updateStats();
+            updateSelectAllState();
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = dbRecords.length;
+            const depts = new Set(dbRecords.map(r => r.department).filter(Boolean));
+            document.getElementById('deptCount').textContent = depts.size;
+            let totalDays = 0,
+                count = 0;
+            dbRecords.forEach(r => {
+                if (r.joinDate) {
+                    const days = Math.floor((Date.now() - new Date(r.joinDate).getTime()) / (1000 * 60 * 60 * 24));
+                    if (days > 0) { totalDays += days;
+                        count++; }
+                }
+            });
+            document.getElementById('avgAge').textContent = count > 0 ? Math.round(totalDays / count) : 0;
+            document.getElementById('chiefCount').textContent = dbRecords.filter(r => r.chief && r.chief.trim() !== '')
+                .length;
+        }
+
+        function updateFilterOptions() {
+            const depts = [...new Set(dbRecords.map(r => r.department).filter(Boolean))];
+            const current = document.getElementById('filterDept').value;
+            const select = document.getElementById('filterDept');
+            select.innerHTML = '<option value="">Все отделы</option>' + depts.map(d =>
+                `<option value="${d}">${d}</option>`).join('');
+            select.value = current;
+        }
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('selectAll');
+            if (!selectAll) return;
+            const cbs = document.querySelectorAll('.row-checkbox');
+            const checked = document.querySelectorAll('.row-checkbox:checked');
+            selectAll.checked = cbs.length > 0 && checked.length === cbs.length;
+        }
+
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+        document.getElementById('filterDept').addEventListener('change', renderTable);
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterDept').value = '';
+            renderTable();
+        });
+
+        document.querySelectorAll('[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const field = th.dataset.sort;
+                if (field === 'photo') return;
+                if (currentSort.field === field) { currentSort.asc = !currentSort.asc; } else { currentSort.field =
+                        field;
+                    currentSort.asc = true; }
+                renderTable();
+            });
+        });
+
+        document.getElementById('addBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (observerMode) { showToast('Наблюдатель — добавление заблокировано', 'warning'); return; }
+            const data = getFormData();
+            if (!data.fio) { showToast('Заполните ФИО', 'error'); return; }
+            const newRec = { ...data, id: generateId() };
+            dbRecords.push(newRec);
+            saveToStorage();
+            addLog('Добавление', `${data.fio}`);
+            renderTable();
+            clearForm();
+            showToast(`Сотрудник "${data.fio}" добавлен`, 'success');
+        });
+
+        document.getElementById('updateBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (observerMode) { showToast('Наблюдатель — редактирование заблокировано', 'warning'); return; }
+            if (!currentEditId) { showToast('Сначала выберите запись', 'error'); return; }
+            const data = getFormData();
+            if (!data.fio) { showToast('Заполните ФИО', 'error'); return; }
+            const idx = dbRecords.findIndex(r => r.id === currentEditId);
+            if (idx === -1) { showToast('Запись не найдена', 'error'); return; }
+            const oldName = dbRecords[idx].fio;
+            dbRecords[idx] = { ...data, id: currentEditId };
+            saveToStorage();
+            addLog('Обновление', `${oldName} → ${data.fio}`);
+            renderTable();
+            clearForm();
+            showToast(`Запись обновлена: ${data.fio}`, 'success');
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (observerMode) { showToast('Наблюдатель — удаление заблокировано', 'warning'); return; }
+            if (!currentEditId) { showToast('Выберите запись', 'error'); return; }
+            const rec = dbRecords.find(r => r.id === currentEditId);
+            if (!rec) return;
+            if (!confirm(`Удалить запись "${rec.fio || 'без ФИО'}"?`)) return;
+            let trash = JSON.parse(localStorage.getItem('vchk_trash')) || [];
+            trash.push({ ...rec, deletedAt: new Date().toISOString() });
+            localStorage.setItem('vchk_trash', JSON.stringify(trash));
+            dbRecords = dbRecords.filter(r => r.id !== currentEditId);
+            saveToStorage();
+            addLog('Удаление', `${rec.fio}`);
+            renderTable();
+            clearForm();
+            showToast(`Запись "${rec.fio}" в корзине', 'warning');
+            renderTrash();
+        });
+
+        document.getElementById('clearFieldsBtn').addEventListener('click', clearForm);
+
+        // ============================================================
+        // 13. ЭКСПОРТ / ИМПОРТ
+        // ============================================================
+        document.getElementById('exportJsonBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const data = JSON.stringify(dbRecords, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vchk_db_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('JSON экспортирован', 'success');
+        });
+
+        document.getElementById('importJsonBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            document.getElementById('importFileInput').click();
+        });
+
+        document.getElementById('importFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (Array.isArray(data)) {
+                        if (confirm(`Импортировать ${data.length} записей? (текущие будут заменены)`)) {
+                            dbRecords = data;
+                            saveToStorage();
+                            addLog('Импорт JSON', `${data.length} записей`);
+                            renderTable();
+                            clearForm();
+                            showToast(`Импортировано ${data.length} записей`, 'success');
+                        }
+                    } else { showToast('Неверный формат JSON', 'error'); }
+                } catch (err) { showToast('Ошибка импорта: ' + err.message, 'error'); }
+            };
+            reader.readAsText(file);
+            this.value = '';
+        });
+
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            if (dbRecords.length === 0) { showToast('Нет данных', 'error'); return; }
+            const headers = ['ФИО', 'Позывной', 'Дата рождения', 'Пол', 'Гражданство', 'Образование', 'Семейное положение',
+                'Адрес', 'Отдел', 'Должность', 'Руководитель', 'Телефон', 'Соцсети', 'Дата вступления', 'Отметки'
+            ];
+            const rows = dbRecords.map(r => [r.fio, r.callsign, r.birthDate, r.gender, r.citizenship, r.education, r
+                    .family, r.address, r.department, r.rank, r.chief, r.phone, r.social, r.joinDate, r.notes
+            ]);
+            const csv = [headers.join(';'), ...rows.map(row => row.join(';'))].join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vchk_db_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('CSV экспортирован', 'success');
+        });
+
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            window.print();
+        });
+
+        // ============================================================
+        // 14. МАССОВЫЕ ОПЕРАЦИИ
+        // ============================================================
+        document.getElementById('selectAll').addEventListener('change', function() {
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = this.checked);
+        });
+
+        document.getElementById('massDeleteBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
+            if (ids.length === 0) { showToast('Выберите записи', 'error'); return; }
+            if (!confirm(`Удалить ${ids.length} записей?`)) return;
+            let trash = JSON.parse(localStorage.getItem('vchk_trash')) || [];
+            ids.forEach(id => {
+                const rec = dbRecords.find(r => r.id === id);
+                if (rec) { trash.push({ ...rec, deletedAt: new Date().toISOString() });
+                    dbRecords = dbRecords.filter(r => r.id !== id); }
+            });
+            localStorage.setItem('vchk_trash', JSON.stringify(trash));
+            saveToStorage();
+            addLog('Массовое удаление', `${ids.length} записей`);
+            renderTable();
+            renderTrash();
+            showToast(`Удалено ${ids.length} записей`, 'warning');
+        });
+
+        document.getElementById('massExportBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const ids = [...document.querySelectorAll('.row-checkbox:checked')].map(cb => cb.dataset.id);
+            if (ids.length === 0) { showToast('Выберите записи', 'error'); return; }
+            const data = dbRecords.filter(r => ids.includes(r.id));
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vchk_export_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`Экспортировано ${data.length} записей`, 'success');
+        });
+
+        // ============================================================
+        // 15. ЛОГ
+        // ============================================================
+        document.getElementById('showLogBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const panel = document.getElementById('logPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            renderLog();
+        });
+
+        document.getElementById('clearLogBtn').addEventListener('click', function() {
+            if (!isAdmin) return;
+            log = [];
+            localStorage.setItem('vchk_log', JSON.stringify(log));
+            renderLog();
+            showToast('Лог очищен', 'warning');
+        });
+
+        // ============================================================
+        // 16. ПОЛНОЭКРАННАЯ КАРТОЧКА
+        // ============================================================
+        function openFullscreen(record) {
+            if (!record) return;
+            document.getElementById('fcPhoto').src = record.photo || '';
+            document.getElementById('fcName').textContent = record.fio || '—';
+            document.getElementById('fcRank').textContent = `${record.rank || ''} ${record.department ? '— ' + record.department : ''}`;
+
+            const fields = [
+                { label: 'Позывной', value: record.callsign || '—' },
+                { label: 'Дата рождения', value: record.birthDate || '—' },
+                { label: 'Пол', value: record.gender || '—' },
+                { label: 'Гражданство', value: record.citizenship || '—' },
+                { label: 'Образование', value: record.education || '—' },
+                { label: 'Семейное положение', value: record.family || '—' },
+                { label: 'Адрес', value: record.address || '—' },
+                { label: 'Отдел', value: record.department || '—' },
+                { label: 'Должность', value: record.rank || '—' },
+                { label: 'Руководитель', value: record.chief || '—' },
+                { label: 'Телефон', value: record.phone || '—' },
+                { label: 'Соцсети', value: record.social || '—' },
+                { label: 'Дата вступления', value: record.joinDate || '—' },
+                { label: 'Отметки', value: record.notes || '—' },
+                { label: 'Файлы', value: record.files ? record.files.map(f => f.name).join(', ') || '—' : '—' },
+                { label: 'Посл. изменение', value: record.lastModified || '—' }
+            ];
+
+            document.getElementById('fcFields').innerHTML = fields.map(f =>
+                `<div class="fc-field"><span class="fc-label">${f.label}</span><span class="fc-value">${f.value}</span></div>`
+            ).join('');
+
+            document.getElementById('fcEditBtn').dataset.id = record.id;
+            document.getElementById('fcBadgeBtn').dataset.id = record.id;
+            document.getElementById('fullscreenOverlay').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFullscreen() {
+            document.getElementById('fullscreenOverlay').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('fullscreenClose').addEventListener('click', closeFullscreen);
+        document.getElementById('fcCloseBtn').addEventListener('click', closeFullscreen);
+        document.getElementById('fullscreenOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeFullscreen();
+        });
+
+        document.getElementById('fcEditBtn').addEventListener('click', function() {
+            if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+            const id = this.dataset.id;
+            if (!id) return;
+            const record = dbRecords.find(r => r.id === id);
+            if (!record) return;
+            if (observerMode) { showToast('Наблюдатель — редактирование заблокировано', 'warning'); return; }
+            closeFullscreen();
+            fillForm(record);
+            currentEditId = id;
+            document.getElementById('selectedIdDisplay').textContent =
+                `Выбрано: ${record.fio || 'без ФИО'}${record.callsign ? ' (' + record.callsign + ')' : ''}`;
+            showToast(`Загружена запись: ${record.fio}`, 'success');
+            document.querySelector('.db-panel').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // ============================================================
+        // 17. БЕЙДЖ PDF (ИСПРАВЛЕН)
+        // ============================================================
+        async function generateBadgePDF(record, mode = 'fio') {
+            if (!record || !record.fio) {
+                showToast('Нет данных для бейджа', 'error');
+                return;
+            }
+
+            showToast('🔄 Генерация бейджа...', 'success');
+
+            try {
+                // Загружаем библиотеки
+                await loadPDFLibraries();
+
+                // Определяем отображаемое имя
+                let displayName = record.fio || '—';
+                if (mode === 'callsign' && record.callsign) {
+                    displayName = record.callsign;
+                } else if (mode === 'both') {
+                    displayName = record.callsign ? `${record.fio} (${record.callsign})` : record.fio;
+                }
+
+                // Создаём контейнер для бейджа
+                const badgeContainer = document.createElement('div');
+                badgeContainer.style.cssText = `
+                    position: fixed; top: -9999px; left: -9999px; 
+                    width: 400px; background: white; color: black; 
+                    font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
+                    padding: 20px; border-radius: 12px; text-align: center; 
+                    z-index: 99999;
+                `;
+
+                // Фото
+                const photoHtml = record.photo && record.photo.startsWith('data:') ?
+                    `<img src="${record.photo}" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:3px solid #1a3a5a;margin:0 auto 12px;display:block;">` :
+                    `<div style="width:120px;height:120px;border-radius:50%;background:#e0e8f0;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:48px;color:#8a9ab0;">👤</div>`;
+
+                // QR-код (текстовый, через API)
+                const qrData = `ID: ${record.id}\n${displayName}\n${record.rank || ''}\n${record.department || ''}`;
+                const qrUrl =
+                    `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+
+                // Собираем бейдж
+                badgeContainer.innerHTML = `
+                    <div style="background:linear-gradient(135deg,#0a1a2a,#1a3a5a);color:white;padding:12px;border-radius:12px 12px 0 0;font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:700;">
+                        ВЧК • Всекрымская Чрезвычайная Комиссия
+                    </div>
+                    <div style="padding:18px 14px 14px;">
+                        ${photoHtml}
+                        <div style="font-size:22px;font-weight:800;margin:4px 0 2px;color:#1a2a3a;">${displayName}</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a4a7a;margin-bottom:2px;">${record.rank || '—'}</div>
+                        <div style="font-size:14px;font-weight:500;color:#4a6a8a;margin-bottom:6px;">${record.department || '—'}</div>
+                        <div style="font-size:12px;color:#6a8aaa;border-top:1px solid #e0e8f0;padding-top:8px;margin-top:4px;">
+                            Дата вступления: ${record.joinDate ? new Date(record.joinDate).toLocaleDateString('ru-RU') : '—'}
+                        </div>
+                        <div style="margin-top:8px;">
+                            <img src="${qrUrl}" style="width:80px;height:80px;border:1px solid #d0d8e0;border-radius:8px;" alt="QR">
+                        </div>
+                        <div style="font-size:10px;color:#8a9aaa;margin-top:4px;letter-spacing:1px;">
+                            ${record.id || '—'}
+                        </div>
+                    </div>
+                    <div style="background:#f0f4fc;padding:6px;border-radius:0 0 12px 12px;font-size:10px;color:#4a6a8a;letter-spacing:1px;font-weight:600;">
+                        Действителен при предъявлении
+                    </div>
+                `;
+
+                document.body.appendChild(badgeContainer);
+
+                // Ждём загрузки QR-кода
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Рендерим в canvas
+                const canvas = await html2canvas(badgeContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: 400,
+                    height: 500,
+                });
+
+                document.body.removeChild(badgeContainer);
+
+                // Создаём PDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a6' // 105 x 148 мм
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+                // Скачиваем
+                const fileName = `Бейдж_${record.fio.replace(/\s+/g, '_')}.pdf`;
+                pdf.save(fileName);
+                showToast(`✅ Бейдж "${record.fio}" скачан`, 'success');
+            } catch (error) {
+                console.error('Ошибка генерации бейджа:', error);
+                showToast('❌ Ошибка генерации бейджа: ' + error.message, 'error');
+            }
+        }
+
+        let pdfLibrariesLoaded = false;
+
+        function loadPDFLibraries() {
+            return new Promise((resolve, reject) => {
+                if (pdfLibrariesLoaded) {
+                    resolve();
+                    return;
+                }
+
+                // Загружаем html2canvas
+                const script1 = document.createElement('script');
+                script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                document.head.appendChild(script1);
+
+                // Загружаем jsPDF
+                const script2 = document.createElement('script');
+                script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                document.head.appendChild(script2);
+
+                let loaded = 0;
+
+                function checkLoaded() {
+                    loaded++;
+                    if (loaded >= 2) {
+                        pdfLibrariesLoaded = true;
+                        // Проверяем, что функции действительно загружены
+                        if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                            // Если не загрузились — пробуем ещё раз через проверку
+                            setTimeout(() => {
+                                if (typeof html2canvas !== 'undefined' && typeof window.jspdf !== 'undefined') {
+                                    pdfLibrariesLoaded = true;
+                                    resolve();
+                                } else {
+                                    reject(new Error('Библиотеки не загрузились'));
+                                }
+                            }, 1000);
+                            return;
+                        }
+                        resolve();
+                    }
+                }
+
+                script1.onload = checkLoaded;
+                script2.onload = checkLoaded;
+
+                script1.onerror = () => reject(new Error('Ошибка загрузки html2canvas'));
+                script2.onerror = () => reject(new Error('Ошибка загрузки jsPDF'));
+
+                // Таймаут на случай зависания
+                setTimeout(() => {
+                    if (!pdfLibrariesLoaded) {
+                        // Проверяем ещё раз
+                        if (typeof html2canvas !== 'undefined' && typeof window.jspdf !== 'undefined') {
+                            pdfLibrariesLoaded = true;
+                            resolve();
+                            return;
+                        }
+                        reject(new Error('Таймаут загрузки библиотек'));
+                    }
+                }, 8000);
+            });
+        }
+
+        // Кнопка бейджа
+        document.getElementById('fcBadgeBtn').addEventListener('click', function() {
+            const id = this.dataset.id;
+            if (!id) return;
+            const record = dbRecords.find(r => r.id === id);
+            if (!record) {
+                showToast('Запись не найдена', 'error');
+                return;
+            }
+            // Показываем модалку выбора
+            document.getElementById('badgeChoiceOverlay').classList.add('show');
+            document.getElementById('badgeChoiceOverlay').dataset.recordId = id;
+        });
+
+        document.getElementById('badgeChoiceConfirm').addEventListener('click', async function() {
+            const id = document.getElementById('badgeChoiceOverlay').dataset.recordId;
+            const record = dbRecords.find(r => r.id === id);
+            if (!record) return;
+            const mode = document.getElementById('badgeChoiceSelect').value;
+            document.getElementById('badgeChoiceOverlay').classList.remove('show');
+            await generateBadgePDF(record, mode);
+        });
+
+        document.getElementById('badgeChoiceCancel').addEventListener('click', function() {
+            document.getElementById('badgeChoiceOverlay').classList.remove('show');
+        });
+        document.getElementById('badgeChoiceOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) document.getElementById('badgeChoiceOverlay').classList.remove('show');
+        });
+
+        // ============================================================
+        // 18. ГОРЯЧИЕ КЛАВИШИ
+        // ============================================================
+        let qqwrBuffer = [];
+        const rusToLat = { 'й': 'q', 'ц': 'w', 'у': 'e', 'к': 'r', 'е': 't', 'н': 'y', 'г': 'u', 'ш': 'i', 'щ': 'o',
+            'з': 'p', 'ф': 'a', 'ы': 's', 'в': 'd', 'а': 'f', 'п': 'g', 'р': 'h', 'о': 'j', 'л': 'k', 'д': 'l',
+            'я': 'z', 'ч': 'x', 'с': 'c', 'м': 'v', 'и': 'b', 'т': 'n', 'ь': 'm'
+        };
+
+        function normalizeKey(key) {
+            const lower = key.toLowerCase();
+            if (/[a-z]/.test(lower)) return lower;
+            return rusToLat[lower] || null;
+        }
+
+        function handleHotkeys(e) {
+            if (!isAdmin) return;
+
+            if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+                const norm = normalizeKey(e.key);
+                if (norm) {
+                    qqwrBuffer.push(norm);
+                    if (qqwrBuffer.length > 4) qqwrBuffer.shift();
+                    if (qqwrBuffer.join('') === 'qqwr') {
+                        qqwrBuffer = [];
+                        e.preventDefault();
+                        document.getElementById('dbPwdOverlay').classList.add('show');
+                        document.getElementById('dbModalPwdInput').value = '';
+                        document.getElementById('dbModalPwdError').textContent = '';
+                        setTimeout(() => document.getElementById('dbModalPwdInput').focus(), 100);
+                        const d = document.getElementById('debugTrigger');
+                        d.style.display = 'block';
+                        setTimeout(() => { d.style.display = 'none'; }, 1000);
+                        return;
+                    }
+                    if (qqwrBuffer.join('') === 'qq') {
+                        qqwrBuffer = [];
+                        e.preventDefault();
+                        document.querySelectorAll('.admin-only').forEach(el => {
+                            el.classList.remove('visible');
+                            el.style.display = 'none';
+                        });
+                        document.getElementById('dbHiddenPanel').classList.remove('active');
+                        document.getElementById('dbInterface').classList.add('hidden');
+                        document.getElementById('dbAccessArea').classList.remove('visible');
+                        showToast('🔒 Режим инкогнито', 'warning');
+                        return;
+                    }
+                }
+            }
+
+            if ((e.key === 'p' || e.key === 'P') && document.getElementById('fullscreenOverlay').classList.contains(
+                'show')) {
+                const id = document.getElementById('fcEditBtn').dataset.id;
+                if (id) {
+                    const record = dbRecords.find(r => r.id === id);
+                    if (record) {
+                        document.getElementById('badgeChoiceOverlay').classList.add('show');
+                        document.getElementById('badgeChoiceOverlay').dataset.recordId = id;
+                    }
+                }
+            }
+
+            if (e.ctrlKey && e.key === 'e') { e.preventDefault();
+                document.getElementById('editToggleBtn').click(); }
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                e.preventDefault();
+                document.getElementById('dbPwdOverlay').classList.add('show');
+                document.getElementById('dbModalPwdInput').value = '';
+                document.getElementById('dbModalPwdError').textContent = '';
+                setTimeout(() => document.getElementById('dbModalPwdInput').focus(), 100);
+            }
+            if (e.key === 'Escape') {
+                if (document.getElementById('fullscreenOverlay').classList.contains('show')) { closeFullscreen(); }
+                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+            }
+        }
+
+        document.addEventListener('keydown', handleHotkeys);
+
+        // ============================================================
+        // 19. ПАРОЛЬ БД
+        // ============================================================
+        document.getElementById('dbModalPwdConfirm').addEventListener('click', function() {
+            const input = document.getElementById('dbModalPwdInput');
+            const error = document.getElementById('dbModalPwdError');
+            if (input.value === DB_PASSWORD) {
+                document.getElementById('dbPwdOverlay').classList.remove('show');
+                const panel = document.getElementById('dbHiddenPanel');
+                const dbInterface = document.getElementById('dbInterface');
+                panel.classList.add('active');
+                dbInterface.classList.remove('hidden');
+                renderTable();
+                showToast('База данных открыта', 'success');
+                addLog('Открытие БД', 'успешный вход');
+                setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 300);
+            } else {
+                error.textContent = '❌ Неверный пароль БД';
+                input.value = '';
+                input.focus();
+            }
+        });
+
+        document.getElementById('dbModalPwdCancel').addEventListener('click', () => {
+            document.getElementById('dbPwdOverlay').classList.remove('show');
+            document.getElementById('dbModalPwdError').textContent = '';
+        });
+        document.getElementById('dbModalPwdInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('dbModalPwdConfirm').click();
+            if (e.key === 'Escape') document.getElementById('dbModalPwdCancel').click();
+        });
+        document.getElementById('dbPwdOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) document.getElementById('dbModalPwdCancel').click();
+        });
+
+        // ============================================================
+        // 20. АВТОБЭКАП
+        // ============================================================
+        function autoBackup() {
+            const key = 'vchk_backup_' + new Date().toISOString().slice(0, 10);
+            const data = { db: dbRecords, blocks: blocks, log: log, date: new Date().toISOString() };
+            const backups = JSON.parse(localStorage.getItem('vchk_backups')) || [];
+            backups.push({ key, data });
+            if (backups.length > 7) backups.shift();
+            localStorage.setItem('vchk_backups', JSON.stringify(backups));
+            localStorage.setItem(key, JSON.stringify(data));
+            console.log('📦 Автобэкап:', new Date().toLocaleString());
+        }
+        setTimeout(autoBackup, 5000);
+        setInterval(autoBackup, 86400000);
+
+        // ============================================================
+        // 21. ВОССТАНОВЛЕНИЕ
+        // ============================================================
+        function restoreEditMode() {
+            if (localStorage.getItem('vchk_edit_mode') === 'true') { enableEditMode(); }
+            loadCardContent();
+        }
+
+        // ============================================================
+        // 22. ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
+        window.addEventListener('load', function() {
+            restoreEditMode();
+            renderBlocks();
+            renderTable();
+            renderTrash();
+            renderLog();
+            updateStats();
+            updateFilterOptions();
+            if (localStorage.getItem('vchk_theme') === 'light') {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+            }
+            document.getElementById('addBlockBtn').addEventListener('click', function() {
+                if (!isAdmin) { showToast('Требуется авторизация', 'error'); return; }
+                openBlockModal();
+            });
+            console.log('🔐 ВЧК Абсолют загружена.');
+            console.log('👆 Двойной клик по логотипу → админ-панель (пароль: jaben)');
+            console.log('🗄️ QQWR → модалка БД (пароль: 180988)');
+            console.log('🪪 Бейдж: кнопка в профиле или клавиша P');
+            console.log('🔒 QQ → инкогнито');
+        });
+    </script>
+
+</body>
+</html>
